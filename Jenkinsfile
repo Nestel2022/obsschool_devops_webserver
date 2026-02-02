@@ -7,20 +7,21 @@ pipeline {
                     url: 'https://github.com/Nestel2022/obsschool_devops_webserver'
             }
         }
-       stage('Pruebas de SAST y Env') {
-            parallel {
-                stage('Pruebas de SAST') {
-                    steps {
-                        echo 'Ejecución de pruebas de SAST'
-                    }
-                }
-                stage('Imprimir Env') {
-                    steps {
-                        echo "WORKSPACE path: ${env.WORKSPACE}"
-                    }
+        stage('Configurar archivo') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'Credentials_DevOps',
+                                                 usernameVariable: 'USER',
+                                                 passwordVariable: 'PASS')]) {
+                    sh '''
+                        echo "[credentials]" > credentials.ini
+                        echo "user=${USER}" >> credentials.ini
+                        echo "password=${PASS}" >> credentials.ini
+                    '''
+                    archiveArtifacts artifacts: 'credentials.ini', fingerprint: true
                 }
             }
         }
+
         stage('Build') {
             steps {
                 sh 'docker build -t devops_ws .'
