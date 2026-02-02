@@ -7,21 +7,20 @@ pipeline {
                     url: 'https://github.com/Nestel2022/obsschool_devops_webserver'
             }
         }
-        stage('Configurar archivo') {
+        stage('Pruebas de SAST') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'Credentials_DevOps',
-                                                 usernameVariable: 'USER',
-                                                 passwordVariable: 'PASS')]) {
-                    sh '''
-                        echo "[credentials]" > credentials.ini
-                        echo "user=${USER}" >> credentials.ini
-                        echo "password=${PASS}" >> credentials.ini
-                    '''
-                    archiveArtifacts artifacts: 'credentials.ini', fingerprint: true
+                withSonarQubeEnv('SonarQubeServer') {
+                    sh 'sonar-scanner'
                 }
             }
         }
-
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false
+                }
+            }
+        }
         stage('Build') {
             steps {
                 sh 'docker build -t devops_ws .'
