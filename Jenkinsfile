@@ -26,5 +26,14 @@ pipeline {
                 sh 'docker build -t devops_ws .'
             }
         }
+         stage('Despliegue del servidor') {
+            steps {
+                sh '''
+                    docker stop devops_ws || true
+                    docker rm devops_ws || true
+                    docker run -d -p 8090:8090 --name devops_ws devops_ws
+                '''
+            }
+        }
     }
 }
