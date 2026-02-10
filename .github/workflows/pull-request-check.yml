@@ -1,0 +1,39 @@
+name: Pull Request Check
+
+on:
+  pull_request:
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Realizar análisis de SAST
+        run: echo "Realizando análisis de SAST"
+
+      - name: Comprobar requisitos
+        id: check
+        run: |
+          if [ -f allow_pull_request.txt ]; then
+            echo "allow_pull=true" >> $GITHUB_ENV
+          else
+            echo "allow_pull=false" >> $GITHUB_ENV
+          fi
+
+      - name: Permitir Pull Request
+        if: env.allow_pull == 'true'
+        run: echo "Permitiendo Pull Request"
+
+      - name: Impedir Pull Request
+        if: env.allow_pull == 'false'
+        run: |
+          echo "Build fallida. Impidiendo Pull Request"
+          exit 1
+
+      - name: Guardar resultado como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: pull-request-check
+          path: allow_pull_request.txt
