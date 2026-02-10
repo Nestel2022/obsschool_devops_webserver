@@ -1,0 +1,25 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Pruebas de SAST
+        run: echo "Ejecución de pruebas de SAST"
+
+      - name: Crear archivo de credenciales
+        run: |
+          echo "[default]" > credentials.ini
+          echo "username=${{ secrets.USERNAME }}" >> credentials.ini
+          echo "password=${{ secrets.PASSWORD }}" >> credentials.ini
+
+      - name: Build docker image
+        run: docker build -t devops_ws . --tag devops_ws:$(date +%s)
